@@ -1,0 +1,19 @@
+# Composer runtime
+composer.phar
+composer.lock
+/vendor/
+
+# IDE files
+/.idea/
+*.iml
+nbproject
+
+/.vagrant/
+
+# Build files
+build
+database.ini*
+
+# Other
+**/.DS_Store
+/.phpunit.result.cache
