@@ -32,6 +32,7 @@
 namespace OpusTest\Sword;
 
 use Opus\Sword\SwordModule;
+use PHPUnit\Framework\TestCase;
 
 class SwordModuleTest extends TestCase
 {
