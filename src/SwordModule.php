@@ -31,7 +31,7 @@
 
 namespace Opus\Sword;
 
-use Opus\Application\Config\Module;
+use Opus\App\Common\Config\Module;
 
 /**
  * Descriptor for SWORD module.

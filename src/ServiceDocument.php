@@ -34,7 +34,7 @@ namespace Opus\Sword;
 use DOMDocument;
 use DOMElement;
 use DOMException;
-use Opus\Application\Config\MaxUploadSize;
+use Opus\App\Common\Config\MaxUploadSize;
 use Opus\Common\Config;
 use Opus\Import\Sword\ImportCollection;
 use Zend_Config;
