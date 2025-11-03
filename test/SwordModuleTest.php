@@ -31,6 +31,7 @@
 
 namespace OpusTest\Sword;
 
+use Opus\Common\Document;
 use Opus\Sword\SwordModule;
 use PHPUnit\Framework\TestCase;
 
@@ -48,5 +49,17 @@ class SwordModuleTest extends TestCase
         $module = new SwordModule();
 
         $this->assertEquals('sword_module_description', $module->getDescription());
+    }
+
+    public function testDatabase()
+    {
+        $doc = Document::new();
+        $doc->setEdition('1st');
+
+        $docId = $doc->store();
+
+        $doc = Document::get($docId);
+
+        $this->assertEquals('1st', $doc->getEdition());
     }
 }
