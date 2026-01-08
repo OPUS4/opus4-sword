@@ -48,8 +48,11 @@ class SwordApp extends Application
     {
         parent::__construct('OPUS 4 Sword Tool'); // TODO add version number
 
-        $commandProvider = new SwordCommandProvider();
-        $commands        = $commandProvider->getCommands();
+        $commands = [
+            new DepositCommand(),
+            new PingCommand(),
+            new ValidateCommand(),
+        ];
 
         foreach ($commands as $command) {
             // Add alias for commands without 'sword:' namespace (needed in OPUS 4 Application).

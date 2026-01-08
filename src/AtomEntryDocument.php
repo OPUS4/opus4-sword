@@ -43,6 +43,13 @@ use function filter_var;
 
 use const FILTER_VALIDATE_BOOLEAN;
 
+/**
+ * Reponse document for successfully made SWORD deposits.
+ *
+ * TODO separate from HTTP specifics?
+ * TODO Separate basic version and "OPUS 4 multiple documents special handling"?
+ * TODO create AND parse XML (Parsing can be used on the client side.)
+ */
 class AtomEntryDocument
 {
     /** @var array */

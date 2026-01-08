@@ -25,25 +25,31 @@
  * along with OPUS; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * @copyright   Copyright (c) 2024, OPUS 4 development team
+ * @copyright   Copyright (c) 2025, OPUS 4 development team
  * @license     http://www.gnu.org/licenses/gpl.html General Public License
  */
 
 namespace Opus\Sword\Console;
 
+use Opus\Import\PackageHandler;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Mime\MimeTypes;
 
+use function count;
 use function file_exists;
-use function fopen;
 
 /**
- * Console command for depositing a SWORD package via HTTP(S).
+ * Console command for importing a SWORD package.
+ *
+ * This command is meant for testing and limited use cases. It allows taking a SWORD
+ * package for OPUS 4 and deposit it without using HTTP.
+ *
+ * TODO user name option? (and other options for AdditionalEnrichments?)
  */
-class DepositCommand extends AbstractClientCommand
+class ImportCommand extends Command
 {
     public const ARGUMENT_SWORD_FILE = 'File';
 
@@ -52,22 +58,22 @@ class DepositCommand extends AbstractClientCommand
         parent::configure();
 
         $help = <<<EOT
-Depositing OPUS 4 SWORD package.
+Importing OPUS 4 Sword package.
 EOT;
 
-        $this->setName('sword:deposit')
-            ->setDescription('Deposit OPUS 4 SWORD package')
+        $this->setName('sword:import')
+            ->setDescription('Imports OPUS 4 Sword package')
             ->setHelp($help)
             ->addArgument(
                 self::ARGUMENT_SWORD_FILE,
                 InputArgument::REQUIRED,
-                'SWORD package file'
+                'Sword package file'
             );
     }
 
     /**
+     * TODO How to handle additional enrichments for console deposit?
      * TODO How to output error document?
-     * TODO move OPUS 4 SWORD client code into separate class
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -83,23 +89,33 @@ EOT;
         $mimeType  = $mimeTypes->guessMimeType($filePath);
         $output->writeln("MIME-Type: {$mimeType}", OutputInterface::VERBOSITY_DEBUG);
 
-        $swordUrl      = $this->getSwordUrl($input, $output);
-        $clientOptions = $this->getClientOptions($input, $output);
+        // TODO make $mimeType optional and guess handling inside handlePackage()
+        $packageHandler = PackageHandler::getPackageHandler($mimeType);
 
-        $clientOptions['body']    = fopen($filePath, 'r');
-        $clientOptions['headers'] = [
-            'Content-Type' => $mimeType,
-        ];
+        if ($packageHandler === null) {
+            $output->writeln("No package handler found for type '{$mimeType}'");
+            return self::FAILURE;
+        }
 
-        $client   = HttpClient::create();
-        $response = $client->request(
-            'POST',
-            $swordUrl . '/deposit',
-            $clientOptions,
-        );
+        // TODO additional output from inside package handler? Or just logging?
+        $statusDoc = $packageHandler->handlePackage($filePath);
 
-        // TODO parse/format XML response
-        $this->writeResponse($response->getContent(), $input, $output);
+        $documents = $statusDoc->getDocs();
+        $docCount  = count($documents);
+
+        $output->writeln("Imported {$docCount} documents");
+
+        if (! $statusDoc->noDocImported()) {
+            foreach ($statusDoc->getDocs() as $doc) {
+                $title    = $doc->getMainTitle();
+                $titleStr = $title !== null ? '"' . $title->getValue() . '"' : 'NO TITLE';
+                $output->writeln("{$doc->getId()}, {$titleStr}");
+            }
+        }
+
+        // TODO what happens when trying to import same package twice? (there maybe conflicts: DOI, URN, ...)
+        // TODO show errors
+        // TODO ? set additional enrichments
 
         return self::SUCCESS;
     }

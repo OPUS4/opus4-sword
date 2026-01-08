@@ -25,25 +25,27 @@
  * along with OPUS; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * @copyright   Copyright (c) 2024, OPUS 4 development team
+ * @copyright   Copyright (c) 2025, OPUS 4 development team
  * @license     http://www.gnu.org/licenses/gpl.html General Public License
  */
 
 namespace Opus\Sword\Console;
 
+use Opus\Import\PackageHandler;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Mime\MimeTypes;
 
 use function file_exists;
-use function fopen;
 
 /**
- * Console command for depositing a SWORD package via HTTP(S).
+ * Console command for validating a SWORD package.
+ *
+ * This command verifies the structure and XML of an OPUS 4 SWORD package.
  */
-class DepositCommand extends AbstractClientCommand
+class ValidateCommand extends Command
 {
     public const ARGUMENT_SWORD_FILE = 'File';
 
@@ -52,23 +54,21 @@ class DepositCommand extends AbstractClientCommand
         parent::configure();
 
         $help = <<<EOT
-Depositing OPUS 4 SWORD package.
+Validating OPUS 4 Sword package.
+
+THIS COMMAND IS NOT IMPLEMENTED YET.
 EOT;
 
-        $this->setName('sword:deposit')
-            ->setDescription('Deposit OPUS 4 SWORD package')
+        $this->setName('sword:validate')
+            ->setDescription('Validate OPUS 4 Sword package')
             ->setHelp($help)
             ->addArgument(
                 self::ARGUMENT_SWORD_FILE,
                 InputArgument::REQUIRED,
-                'SWORD package file'
+                'Sword package file'
             );
     }
 
-    /**
-     * TODO How to output error document?
-     * TODO move OPUS 4 SWORD client code into separate class
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $filePath = $input->getArgument(self::ARGUMENT_SWORD_FILE);
@@ -77,29 +77,18 @@ EOT;
             $output->writeln("'{$filePath}' not found");
             return self::FAILURE;
         }
-        $output->writeln($filePath, OutputInterface::VERBOSITY_DEBUG);
 
         $mimeTypes = new MimeTypes();
         $mimeType  = $mimeTypes->guessMimeType($filePath);
-        $output->writeln("MIME-Type: {$mimeType}", OutputInterface::VERBOSITY_DEBUG);
 
-        $swordUrl      = $this->getSwordUrl($input, $output);
-        $clientOptions = $this->getClientOptions($input, $output);
+        $packageHandler = PackageHandler::getPackageHandler($mimeType);
 
-        $clientOptions['body']    = fopen($filePath, 'r');
-        $clientOptions['headers'] = [
-            'Content-Type' => $mimeType,
-        ];
+        if ($packageHandler === null) {
+            $output->writeln("No package handler found for type '{$mimeType}'");
+            return self::FAILURE;
+        }
 
-        $client   = HttpClient::create();
-        $response = $client->request(
-            'POST',
-            $swordUrl . '/deposit',
-            $clientOptions,
-        );
-
-        // TODO parse/format XML response
-        $this->writeResponse($response->getContent(), $input, $output);
+        // TODO use validate function of PackageHandlerInterface
 
         return self::SUCCESS;
     }
