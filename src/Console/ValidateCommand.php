@@ -60,7 +60,7 @@ THIS COMMAND IS NOT IMPLEMENTED YET.
 EOT;
 
         $this->setName('sword:validate')
-            ->setDescription('Validate OPUS 4 Sword package')
+            ->setDescription('Validate OPUS 4 Sword package <error>TODO</error>')
             ->setHelp($help)
             ->addArgument(
                 self::ARGUMENT_SWORD_FILE,
