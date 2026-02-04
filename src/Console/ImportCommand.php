@@ -40,6 +40,7 @@ use Symfony\Component\Mime\MimeTypes;
 
 use function count;
 use function file_exists;
+use function sprintf;
 
 /**
  * Console command for importing a SWORD package.
@@ -47,7 +48,7 @@ use function file_exists;
  * This command is meant for testing and limited use cases. It allows taking a SWORD
  * package for OPUS 4 and deposit it without using HTTP.
  *
- * TODO user name option? (and other options for AdditionalEnrichments?)
+ * TODO options for AdditionalEnrichments?
  */
 class ImportCommand extends Command
 {
@@ -109,7 +110,12 @@ EOT;
             foreach ($statusDoc->getDocs() as $doc) {
                 $title    = $doc->getMainTitle();
                 $titleStr = $title !== null ? '"' . $title->getValue() . '"' : 'NO TITLE';
-                $output->writeln("{$doc->getId()}, {$titleStr}");
+                $output->writeln(sprintf(
+                    '%d, %s (%s)',
+                    $doc->getId(),
+                    $titleStr,
+                    $doc->getServerState()
+                ));
             }
         }
 
