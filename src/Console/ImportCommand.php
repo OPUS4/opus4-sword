@@ -49,6 +49,7 @@ use function sprintf;
  * package for OPUS 4 and deposit it without using HTTP.
  *
  * TODO options for AdditionalEnrichments?
+ * TODO No message if URN collision prevents import
  */
 class ImportCommand extends Command
 {
@@ -100,6 +101,11 @@ EOT;
 
         // TODO additional output from inside package handler? Or just logging?
         $statusDoc = $packageHandler->handlePackage($filePath);
+
+        if ($statusDoc === null) {
+            $output->writeln('<error>Could not parse OPUS 4 Sword file. Missing or empty XML.</error>');
+            return self::FAILURE;
+        }
 
         $documents = $statusDoc->getDocs();
         $docCount  = count($documents);
