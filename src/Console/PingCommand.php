@@ -44,7 +44,7 @@ use Symfony\Component\HttpClient\HttpClient;
  */
 class PingCommand extends AbstractClientCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
