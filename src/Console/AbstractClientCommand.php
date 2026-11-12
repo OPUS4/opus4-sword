@@ -57,7 +57,7 @@ abstract class AbstractClientCommand extends Command
 
     public const OPTION_OUTPUT = 'output';
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 

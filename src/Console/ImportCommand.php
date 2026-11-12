@@ -55,7 +55,7 @@ class ImportCommand extends Command
 {
     public const ARGUMENT_SWORD_FILE = 'File';
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
